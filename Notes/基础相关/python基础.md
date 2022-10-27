@@ -719,7 +719,7 @@
             可以在字符串中使用"\"来表示转义，也就是说后面的字符不在是原先的意义了例如\n表示换行 \t表示制表符
             字符串可以'r'或者'R'开头，这种字符串被称为原始字符串
             字符串*3是字符串重复出现3次
-            获取长度: len 可以获取字符串的长度
+            获取长度: len 可以获取字符串的长度 len()
             查找内容: find 查找指定内容在字符串中第一次出现的位置，找不到就是-1，默认是从左边开始查，如果想从右边开始查的话就用rfind，index的效果也是查找，但是index找不到不会返回-1而是直接报错
             判断: stratswith endswith (判断以什么开头，以什么结尾) isalpha isdigit isalnum isspace 返回值都是布尔值
             计算出现的次数: count 
@@ -1346,6 +1346,17 @@
             闭包
                 函数只是一段可执行代码，编译后就"固化"了，每个函数在内存中只有一份实例，得到函数的入口点便可以执行函数了。
                 函数还可以嵌套定义，即在一个函数内部可以定义另一个函数，有了嵌套函数这种结构，便会产生闭包问题
+                
+                局部变量和全局变量
+
+                #局部变量：在函数的内部定义的变量 我们称之为局部变量
+
+                #特点：其作用域范围是函数内部，而函数的外部是不可以使用
+
+                #全局变量：定义在函数外部的变量 我们称之为全局变量
+
+                #特点：可以再函数的外部使用，也可以在函数的内部使用
+
             ```
                 def outr():
                     a = 100
@@ -1844,20 +1855,358 @@
 
             私有化
             ```
+            私有化的好处在于不让外界随便修改属性,并且访问范围也仅限于这个类中
+            封装：
+            1.私有化属性
+            2.定义共有set和get方法
+
+            class Student:
+                #__age = 18
+
+                def __init__(self,name,age):
+                    self.name = name
+                    self.age = age
+                    self.__score = 59
+                
+                #定义公有的set和get方法
+                #set为了赋值
+                def setScore(self,score):
+                    #定义成函数的好处在于可以进行判断
+                    self.__score = score
+
+                #get为了取值
+                def getScore(self):
+                    return self.__score     
+
+                def __str__(self):
+                    return '姓名：{},年龄：{},考试分数{}'.format(self.name,self.age,self.__score)
+
+            lisi = Student('lisi',18)
+            print(lisi)
+            lisi.age = 21  #可以修改
+            lisi.__score = 95  #不能直接修改私有变量，必须得使用set函数修改
+            lisi.setScore(95)
+            lisi.getScore()
+
+            私有化的property装饰器
+            class Student:
+                def __init__(self,name,age):
+                    self.__name = name
+                    self.__age = age
+                
+                def setName(self,name):
+                    self.__name = name
+                
+                def getName(self):
+                    return self.__name
+
+                def __str__(self):
+                    return '姓名:{},年龄:{}'.format(self.__name,self.__age)
+
+            s = Student('lisi',20)
+            #如果我们想要修改name值必须调用setName,想要拿到name必须得调用getName
+            s.setName(30)
+            print(s.getName())
+
+            #但是这么使用过于繁琐，我们可以使用property装饰器
+             class Student:
+                def __init__(self,name,age):
+                    self.__name = name
+                    self.__age = age
+                
+                @property #一定要先定义get的age，然后才能利用其来绑定下面的setter
+                def age(self):
+                    return self.__age
+                
+                @age.setter #因为set依赖于get
+                def age(self,age):
+                    self.__age = age
+
+                def __str__(self):
+                    return '姓名:{},年龄:{}'.format(self.__name,self.__age)
+
+             s = Student('lisi',20)
+             print(s.age)#只要加了装饰就可以使用参数一样用不用加括号，就可以这样取值
+             print(s.__dir__())#可以打印出里面的变量参数
+
+            例题：
+            公路(Road):
+                属性：公路名称，公路长度
+            车(Car):
+                属性：车名，时速
+                方法：1.求车名在那条公路上以多少的时速行驶了多长
+                    get_time(self,road)
+                    2.初始化车属性信息__init__方法
+                    3.打印对象显示车的属性信息
+            
+            class Road:
+                def __init__(self,name,len):
+                    self.name = name
+                    self.len = len
+            class Car:
+                def __init__(self,brand,speed):
+                    self.brand = brand
+                    self.speed = speed
+                
+                def get_time(self,road):
+                    ran_time = random.randint(1,10)
+                    msg = '{}品牌的车在{}上以{}速度行驶了{}小时'.format(self.brand,road.name,self.speed,ran_time)
+                
+                def __str__(self):
+                    return '{}品牌的,速度:{}'.format(self.brand,self.speed)
+
+            #创建实例
+            r = Road('青藏高速',5000)
+            audi = Car('奥迪',120)
+            audi.get_time(r)
+             
+             
+            ```
+            继承
+            ```
+            has a和is a
+
+            has a 一个类中使用了另外一种自定义的类型(自定义的类)
+
+            is a 
+            特点：
+            1.如果类中不定义__init__ 调用父类super 就会调用父类的init
+            2.如果类继承了父类，并且也需要定义自己的init的时候，就需要在当前类的init中调用下父类的init
+            3.调用父类的两种方式 super().__init__(参数)  super(类名,self).__init__(参数)
+            4.如果父类和子类都有相同的方法名，那默认的搜索原则是先找当前类，再去找父类。如果在该方法中还是需要父类的操作的话，
+              只需要在方法中加super().方法名()即可  override：重写，覆盖
+
+            class Student:
+                def __init__(self,name,age):
+                    self.name = name
+                    self.age = age
+            
+            class Employee:
+                def __init__(self,name,age):
+                    self.name = name
+                    self.age = age
+
+            class Doctor:
+                def __init__(self,name,age):
+                    self.name = name
+                    self.age = age
+            
+            三个类里面都要定义name,age就显得比较繁琐，所以我们可以把每个类都定义的类型给提出来
+
+            class Person: #基类
+                def __init__(self,name,age):
+                    self.name = name
+                    self.age = age
+            
+            class Student(Person): #子类
+                pass
+            
+            class Employee(Person): #子类
+                pass
+
+            class Doctor(Person): #子类
+                pass
+
+            s = Student('lisi',18)
+
+            那紧接着就会出现问题，如果我还想在子类里面使用__init__的时候，如果直接使用会导致基类的init丢失，那么我们就需要在子类里面调用父类的init。
+            这时候我们就要使用super关键字，super表示的是上层的父类
+            class Person: #基类
+                def __init__(self):
+                    self.name = '匿名'
+                    self.age = 18
+            
+
+            class Student(Person): #子类
+                def __init__(self):
+                    print('----->student的init')
+                    #调用父类的init super()表示找到父类
+                    super().__init__()
+            
+            s = Student()
+
+            如果此时还需要传参的话
+            class Person: #基类
+                def __init__(self,name):
+                    self.name = name
+                    self.age = 18
+                
+                def eat(self):
+                    print(self.name + '正在吃饭(父类)')
+            
+            class Student(Person): #子类
+                def __init__(self,name,class):
+                    self.class = class
+                    print('----->student的init,{}'.format(self.class))
+
+                    #调用父类的init super()表示找到父类
+                    super().__init__(name)
+
+                def eat(self):
+                    print(self.name + '正在吃饭')
+
+            s = Student('李四','大数据')
+            s.eat() #如果子类和父类的方法有相同的方法名的话会调用子类自己的方法
+
+
+            多继承和搜索顺序
+
+            class Person:
+                def __init__(self,name):
+                    self.name = name
+                
+                def eat(self):
+                    print('----->eat1')
+
+                def eat(self,food):
+                    print('----->eat:',food)
+            
+            p = Person('李四')
+            p.eat() 
+            #结果会报错，报没有传参的错。因为如果方法名相同的话后面的会覆盖掉前面的
+
+            多继承
+
+            class A:
+                def test(self):
+                    print('AAAAAAAAAA')
+            
+            class B:
+                def test1(self):
+                    print('BBBBBBBBBB')
+            
+            class C(A,B):#C继承A和B
+                def test2(self):
+                    print('CCCCCCC')
+            
+            c = C()
+            c.test()
+            c.test1()
+            c.test2()
+
+            搜索原则
+
+            class Base:
+                def test(self):
+                    print('----Base----')
+
+            class A(Base):
+                def test(self):
+                    print('AAAAAAAAAA')
+            
+            class B(Base):
+                def test1(self):
+                    print('BBBBBBBBBB')
+            
+            class C(Base):#C继承A和B
+                def test2(self):
+                    print('CCCCCCC')
+            class D(A,B,C):
+                pass
+            
+            d = D()
+            d.test() #结果打印的是AAAAAA
+            import inspect
+            print(inspect.getmro) #返回一个元组，就是一个搜索顺序
+            或者使用
+            print(D.__mro__) #来进行搜索顺序的查找
+
+
+            多态
+
+            class Person:
+                role = 'Pet'
+                def __init__(self,name):
+                    self.name = name
+                
+                def feed_pet(self,pet):
+                    if isinstance(pet,Pet): #判断传过来的参数是什么类型的，这里加上判断是因为上层并不会判断pet的类型，也就是说不管是不是pet类型都能传进来，所以在这里做了限制
+                        print('{}喜欢养宠物:{}'.format(self.name,pet.nickname))
+                    else:
+                        print('不是宠物类型的')
+            
+            class Pet:
+                def __init__(self,nickname,age):
+                    self.nickname = nickname
+                    self.age = age
+                
+                def show(self):
+                    print('昵称:{},年龄:{}'.format(self.nickname,self.age))
+            
+            class Cat(Pet):
+                role = '猫'
+                def catch_mouse(self):
+                    print('抓老鼠...')
+            
+            class Dog(Pet):
+                role = '狗'
+                def watch_house(self):
+                    print('看家高手')
+            
+            #创建对象
+            cat = Cat('花花',2)
+            dog = Dog('大黄',4)
+
+            person = Person('李四') 
+
+            person.feed_pet(cat)
+
+            ```
+
+            开发模式
+            ```
+            单例模式
+            对内存的优化，保证创建的对象都在一个地址上，并不是所有的场景都适合
+
+            class Student:
+                pass
+            
+            s = Student()
+            s1 = Student()
+            s2 = Student()
+            每创建一个对象，内存中就会开辟一片空间
+
+            class Singleton:
+                #私有化
+                __instance = None
+
+                #重写__new__
+                def __new__(cls):
+                    print('----> __new__')
+                    if cls.__instance is None:
+                        cls.__instance = object.__new__(cls)
+                        return cls.__instance
+                    else:
+                        return cls.__instance
+            
+            s = Singleton()
+            s1 = Singleton()
+
+            print(s) #地址产生了
+            print(s1) #地址没有发生变化 
             
             ```
 
 
 
             模块
-            在python中一个脚本(.py)文件就是一个模块，创建模块实际上就是创建一个.py文件，可以被其他模块导入并使用
+            在python中一个脚本(.py)文件就是一个模块，创建模块实际上就是创建一个.py文件，可以被其他模块导入并使用。
+            在python中，模块是代码组织的一种方式，把功能相近的函数放到一个文件中，一个文件就是一个模块
+            这样做的好处：
+                提高代码的可复用、可维护性。一个模块编写完毕后，可以很方便的在其他项目中导入
+                解决了命名冲突，不同模块中相同的命名不会冲突
             
             模块的导入
+            ```
                 import导入 
                 #例 
                 import 文件名
                 然后下面就可以使用文件中的函数及属性了
-                使用方法： 文件名.属性名
+                使用方法： 文件名.属性名  文件名.函数  文件名.类
+
+                例如：我创建了一个calculate.py里面写了add mainus等方法。然后我在另一个test.py文件中想要使用这些方法
+                我就需要在test.py文件中写 import calculate  要使用里面的方法的话我们用 calculate.add()
+
 
                 还可以使用 import...as... 使用as的目的就是重新命名，比如说文件名特别长，就使用as进行别名
                 import 文件名 as 别名
@@ -1869,55 +2218,75 @@
 
                 from 模块名 import 变量
                 from 模块名 import 变量1,变量2,变量3
-                from 模块名 import *
+                from 模块名 import *  但是如果想限制获取的内容，可以在模块中使用__all__=[使用*可以访问到的内容]  __all__=['add','Calculate']
+
+                无论是import还是from的形式，都会将模块内容进行加载，那如果我模块里面本身包含的是有函数调用，但是我被加载的时候不想被执行，那就要使用__name__
             
-            __name__
-            __name__是python的一个内置类属性，它存储模块的名称。python的模块即可以被调用，也可以独立运行。而被调用时__name__存储的是py文件名(模块名称)，独立运行时存储的__main__.
-            那么它的作用主要就是用来区分，当前模块是独立运行还是被调用
-            if __name__ == '__main__':
-                print('独立运行')
-            else:
-                print('被调用')
+                __name__
+                __name__是python的一个内置类属性，它存储模块的名称。python的模块即可以被调用，也可以独立运行。而被调用时__name__存储的是py文件名(模块名称)，独立运行时存储的__main__.
+                那么它的作用主要就是用来区分，当前模块是独立运行还是被调用
+
+                if __name__ == '__main__':
+                    print('独立运行')
+                else:
+                    print('被调用')
+            ```
 
             
             包
+            ```
             为了更好的组织模块，会将多个模块存到包。python处理包也是相当的方便的。简单来说，包就是文件夹，但该文件夹下必须存在__init__.py文件。
+            创建包的时候选择 new package
 
             包的导入类似模块的导入
                 import 包名
                 from 包名.模块名 import *
-            当你在导入这个包的时候就会自动执行 __init__这个文件，乳沟有一些必须执行的话就可以放入这个文件中
+                例如：在user的包里面有一个models模块，models模块里面有一个show方法，我们可以 from user.models import show
+            
+            如果是在包里的同级文件想要导入的话还是需要使用 from 包名.模块名 import 来导入或者前面的包名可以省略 from .模块名 import
+
+
+            __init__文件
+            当你在导入这个包的时候就会自动执行 __init__这个文件，如果有一些必须执行的话就可以放入这个文件中。例如初始化的函数，变量，类。
+            此文件中函数，变量等的访问，只需要通过 包名. 来访问
+
+            循环导入
+
+            A模块中的函数需要使用B模块中函数，B模块中函数需要使用A模块中的函数
+            如果两个文件中的第一句都是导入语句的话，那就会陷入一个循环导入的地步。
+
+            A:
+                import B
+                def test():
+                    f()
+
+            B:
+                def f():
+                    import A
+                    test()        
+           
+
+            如何避免产生循环导入：
+            把导入语句不要放在第一句，而是放在需要的函数前！
+            把导入语句放在最后
  
+            sys模块
+
             模块和包的搜索路径
             当python执行import语句的时候，它会在一些路径中搜索python模块和扩展模块。可以通过sys.path查看路径，比如在包中新建一个test.py文件，里面内容如下
-
+            
             import sys
             print(sys.path) #结果是一个列表
             #遍历列表更加清楚
             for p in sys.path
                 print(p)
             搜索的顺序是 脚本的当前目录、PYTHONPATH环境变量、python安装时的系统目录
+            ```
 
-
-
-            
-
-
-
-
-            局部变量和全局变量
-
-            #局部变量：在函数的内部定义的变量 我们称之为局部变量
-
-            #特点：其作用域范围是函数内部，而函数的外部是不可以使用
-
-            #全局变量：定义在函数外部的变量 我们称之为全局变量
-
-            #特点：可以再函数的外部使用，也可以在函数的内部使用
-
-    文件
+    * 文件
 
         文件的打开与关闭
+        ```
 
         打开文件/创建文件
         在python，使用open函数，可以打开一个已经存在的文件，或者创建一个新文件
@@ -2078,4 +2447,5 @@
             fp.read()
         except FileNotFoundError:
             print('系统正在升级，请稍后再试')
+        ```
 
