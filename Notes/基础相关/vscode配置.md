@@ -6,7 +6,7 @@
   * 安装好Git(安装步骤:https://github.com/liu53dui/Notes/blob/master/Notes/%E5%9F%BA%E7%A1%80%E7%9B%B8%E5%85%B3/git%E5%85%A8%E5%AE%B6%E6%A1%B6.md)
   * 可以在桌面右键git bash here输入git -v查看是否安装好，进行基础的用户名还有邮箱的设置(上面的笔记里也有)，可以使用 git config --list进行查看
   * 新添加sshkey进GitHub账号(保姆教程：https://zhuanlan.zhihu.com/p/576368060)
-  * 进入vscode，点击设置->输入shell window->setting.json
+  * 进入vscode，点击文件->首选项->设置->输入shell window->setting.json
   ```
   {
     "workbench.colorTheme": "Default Dark+",
