@@ -2283,6 +2283,130 @@
             搜索的顺序是 脚本的当前目录、PYTHONPATH环境变量、python安装时的系统目录
             ```
 
+            进程
+            ```
+            单核CPU：多任务交替进行
+            多核CPU：如果任务数超过CPU的核数则也是任务交替进行
+
+            优点：稳定性高，一个进程奔溃了，不会影响其他进程
+            缺点：创建进程开销巨大 操作系统能同时运行进程数目有限
+
+            一个进程里面可以包含多个线程，一个线程里面可以包含多个协程
+
+            进程的创建
+            在linux下可以使用fork函数创建进程，在windows系统上可以引入multiprocessing模块，创建进程。我们可以使用multiprocessing模块中Process类创建新的进程
+
+            Process类说明
+            
+            方法名：__init__()   功能：构造方法
+            参数： name:进程名称 args:任意位置参数 kwargs:任意关键字参数 target:进程实例所调动的对象  
+
+            方法名：start()   功能：启动进程
+            方法名：terminate()   功能：结束进程
+            方法名：join()   功能：是否等等进程执行结束
+            参数：timeout:等等数秒，可选
+
+            def task1():
+                while True:
+                    sleep(1)
+                    print('这是任务1')
+            
+            def task2():
+                while True:
+                    sleep(1)
+                    print('这是任务2')
+            
+            if__name__ == '__main__':
+                task1()
+                task2()
+            
+            运行结果:
+                这是任务1
+                这是任务1
+                这是任务1
+                ...
+            因为任务1一直不结束就不会执行任务2
+            from multiprocessing import Process
+
+            number = 1
+            if__name__ == '__main__':
+                p1 = Process(target = task1)//进程需要传值的话可以使用args后面可以是元组也可以是列表，然后可以在task里面使用
+                p1.start()
+                p2 = Process(target = task2)
+                p2.start()
+
+                while True:
+                    number +=1
+                    if number == 100:
+                        p1.terminate()
+                        p2.terminate()
+            运行结果:
+                这是任务1
+                这是任务2
+                这是任务1
+                这是任务2
+                ...
+
+            如果全局变量在各个子进程里面修改的话，实际上是各个子进程都会复制当前变量，并且在自己里面修改互不干涉。
+
+            
+            自定义进程
+
+            from multiprocessing import Process
+
+            class MyProcess(Process):
+
+                def __init__(self,name):
+                    super(MyProcess,self).__init__()
+                    self.name = name
+
+                #重写run方法，因为所有得线程都要放到run方法里面
+                def run(self):
+                    print('进程名字'+self.name) //这里的name是继承的类里面的
+            
+            if__name__ == '__main__':
+                p = MyProcess('小明')
+                p.start()
+                p1 = MyProcess('小王')
+                p1.start()
+
+            进程池
+
+            当需要创建的子进程数量不多的时候，可以直接利用multiprocessing中的Process动态生成多个进程，但如果是上百甚至是上千个目标，手动的去创建进程的工作量巨大，此时就可以用到multiprocessing模块提供的poll方法。初始化Pool时，可以指定一个最大进程数，当有新的请求提交到pool中时，如果池还没满，那么就会创建一个新的进程来执行该请求；但如果池中的进程数已经达到了指定的最大值，那么该请求就会等待，直到池中有进程结束，才会创建新的进程来执行
+            
+            阻塞式：
+            非阻塞式：        
+
+    
+            from multiprocessing import Pool
+            import time
+            #非阻塞
+            
+            def task(task_name):
+                print('开始做任务啦',task_name)
+                start = time.time()
+                #使用sleep
+                time.sleep(random()*2)
+                end = time.time()
+                print('完成任务',(end-start))
+
+            if __name__ == '__main__':
+                pool = Pool(5)
+                tasks = ['听音乐','吃饭','打游戏']
+                for i in tasks:
+                    pool.apply_async(task,args=(i,))
+                pool.close() #添加任务结束
+                pool.join() #插入主进程
+                print('over!!!')
+            
+
+            ```
+            并发与并行
+            ```
+            -并发：当多个线程在操作的时候，如果系统只有一个CPU，则他根本不可能真正同时进行一个以上的线程，它只能把CPU运行时间划分成若干个时间段，再将时间段分配给各个线程执行，在一个时间段的线程代码运行时，其他线程处于挂起状态。这种方式我们称之为并发(concurrent)
+            -并行：当系统有一个以上CPU时，则线程的操作有可能非并发。当一个CPU执行一个线程时，另一个CPU可以执行另一个线程，两个线程互不抢占CPU资源，可以同时进行，这种方式我们称之为并行(Parallel)
+            ```
+
     * 文件
 
         文件的打开与关闭
